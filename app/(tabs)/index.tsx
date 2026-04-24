@@ -1,5 +1,5 @@
-import SignInScreen from '../screens/auth/SignIn';
+import CategoryScreen from '../screens/client/home/categoryscreen';
 
 export default function HomeScreen() {
-  return <SignInScreen />;
+  return <CategoryScreen />;
 }
