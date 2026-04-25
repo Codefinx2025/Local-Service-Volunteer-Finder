@@ -1,5 +1,5 @@
-import CategoryScreen from '../screens/client/home/categoryscreen';
+import NotificationScreen from '../screens/client/home/notification';
 
 export default function HomeScreen() {
-  return <CategoryScreen />;
+  return <NotificationScreen />;
 }
