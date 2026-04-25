@@ -1,5 +1,5 @@
-import NotificationScreen from '../screens/client/home/notification';
+import PortfolioScreen from '../screens/worker/services/PortfolioScreen';
 
 export default function HomeScreen() {
-  return <NotificationScreen />;
+  return <PortfolioScreen />;
 }
