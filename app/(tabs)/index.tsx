@@ -1,5 +1,7 @@
 import { Redirect } from "expo-router";
+import DiscoverPage from "../screens/client/home/discoverpage";
 
-export default function Index() {
-  return <Redirect href="/screens/auth/WorkerSignup" />;
+export default function HomeScreen() {
+  return <DiscoverPage />;
+
 }
