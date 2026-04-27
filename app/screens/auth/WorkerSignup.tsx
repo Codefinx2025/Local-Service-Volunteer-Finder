@@ -1,435 +1,410 @@
-import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import * as Location from "expo-location";
 import React, { useState } from "react";
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
   Alert,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
+  Image,
   View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { AuthBackdrop } from "@/components/AuthBackdrop";
-import { AvatarBadge } from "@/components/AvatarBadge";
-import { FormInput } from "@/components/FormInput";
-import { GoogleIcon } from "@/components/GoogleIcon";
-import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { PhoneField } from "@/components/PhoneField";
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { Country, DEFAULT_COUNTRY } from "@/constants/countries";
-import { useColors } from "@/hooks/useColors";
 
-type Errors = Partial<
-  Record<
-    | "firstName"
-    | "lastName"
-    | "email"
-    | "password"
-    | "confirm"
-    | "phone"
-    | "location",
-    string
-  >
->;
-
-export default function SignUpScreen() {
-  const colors = useColors();
-  const insets = useSafeAreaInsets();
-  const isWeb = Platform.OS === "web";
-
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+export default function WorkerSignup() {
+  const router = useRouter();
   const [phone, setPhone] = useState("");
-  const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
   const [location, setLocation] = useState("");
-  const [locating, setLocating] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [errors, setErrors] = useState<Errors>({});
+  const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const validate = (): boolean => {
-    const next: Errors = {};
-    if (!firstName.trim()) next.firstName = "Required";
-    if (!lastName.trim()) next.lastName = "Required";
-    if (!email.includes("@")) next.email = "Enter a valid email";
-    if (password.length < 6) next.password = "At least 6 characters";
-    if (confirm !== password) next.confirm = "Passwords don't match";
-    if (phone.replace(/\D/g, "").length < 6) next.phone = "Enter a valid phone";
-    if (!location.trim()) next.location = "Add your location";
-    setErrors(next);
-    return Object.keys(next).length === 0;
+  const handleCountryPress = (_country: Country) => {
+    Alert.alert("Select country code", "Choose a dial code", [
+      {
+        text: "Sri Lanka +94",
+        onPress: () => setCountry({ code: "LK", label: "Sri Lanka", dialCode: "+94" }),
+      },
+      {
+        text: "United States +1",
+        onPress: () => setCountry({ code: "US", label: "United States", dialCode: "+1" }),
+      },
+      {
+        text: "India +91",
+        onPress: () => setCountry({ code: "IN", label: "India", dialCode: "+91" }),
+      },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
-  const handleLocate = async () => {
-    setLocating(true);
-    try {
-      if (Platform.OS === "web") {
-        if ("geolocation" in navigator) {
-          await new Promise<void>((resolve) => {
-            navigator.geolocation.getCurrentPosition(
-              () => {
-                setLocation("Current location · San Francisco, CA");
-                resolve();
-              },
-              () => {
-                setLocation("San Francisco, CA");
-                resolve();
-              },
-              { timeout: 5000 },
-            );
-          });
-        } else {
-          setLocation("San Francisco, CA");
-        }
-      } else {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert(
-            "Location permission",
-            "We use your location to surface jobs near you. You can also type it in.",
-          );
-          return;
-        }
-        const pos = await Location.getCurrentPositionAsync({});
-        const places = await Location.reverseGeocodeAsync({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-        });
-        const place = places[0];
-        if (place) {
-          const parts = [place.city, place.region].filter(Boolean);
-          setLocation(parts.join(", ") || "Current location");
-        } else {
-          setLocation("Current location");
-        }
-      }
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-    } catch {
-      setLocation("San Francisco, CA");
-    } finally {
-      setLocating(false);
-    }
-  };
-
-  const showSuccess = (title: string, message: string) => {
-    if (Platform.OS === "web") {
-      window.alert(`${title}\n\n${message}`);
-    } else {
-      Alert.alert(title, message);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!validate()) {
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      }
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await new Promise((r) => setTimeout(r, 600));
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-      showSuccess(
-        "Account created",
-        `Welcome aboard, ${firstName.trim()}! Your account is ready.`,
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    setGoogleLoading(true);
-    try {
-      await new Promise((r) => setTimeout(r, 500));
-      showSuccess(
-        "Sign up with Google",
-        "Google sign-up is a design preview only.",
-      );
-    } finally {
-      setGoogleLoading(false);
-    }
+  const handleDetectLocation = () => {
+    setLocation("Current location · Colombo");
   };
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <AuthBackdrop />
-      <View
-        style={[
-          styles.headerBar,
-          {
-            paddingTop: insets.top + (isWeb ? 67 : 8),
-            paddingHorizontal: 24,
-          },
-        ]}
-      >
-        <Pressable
-          hitSlop={10}
-          onPress={() =>
-            showSuccess(
-              "Back",
-              "This demo only includes the Create Account screen.",
-            )
-          }
-          style={({ pressed }) => [
-            styles.backBtn,
-            {
-              borderColor: colors.border,
-              backgroundColor: colors.background,
-              opacity: pressed ? 0.6 : 1,
-            },
-          ]}
-        >
-          <Feather name="chevron-left" size={20} color={colors.foreground} />
-        </Pressable>
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Header */}
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Feather name="arrow-left" size={20} color="#111" />
+      </TouchableOpacity>
+
+      <View style={styles.iconContainer}>
+        <View style={styles.profileIcon}>
+          <View style={styles.profileIconHead} />
+          <View style={styles.profileIconBody} />
+        </View>
       </View>
 
-      <KeyboardAwareScrollViewCompat
-        style={{ flex: 1 }}
-        contentContainerStyle={[
-          styles.scroll,
-          {
-            paddingBottom: insets.bottom + (isWeb ? 34 : 24),
-          },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        bottomOffset={20}
-      >
-        <View style={styles.heroSection}>
-          <AvatarBadge size={84} iconSize={42} />
-          <Text style={[styles.title, { color: colors.foreground }]}>
-            Create Account
+      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.subtitle}>
+        Please fill in the details to get started
+      </Text>
+
+      {/* Name Row */}
+      <View style={styles.row}>
+        <View style={[styles.inputWrapper, styles.inputWrapperHalf]}>
+          <Feather name="user" size={18} color="#777" style={styles.inputIcon} />
+          <TextInput placeholder="First Name" style={styles.inputWithIcon} placeholderTextColor="#777" />
+        </View>
+        <View style={[styles.inputWrapper, styles.inputWrapperHalf]}>
+          <Feather name="user" size={18} color="#777" style={styles.inputIcon} />
+          <TextInput placeholder="Last Name" style={styles.inputWithIcon} placeholderTextColor="#777" />
+        </View>
+      </View>
+
+      {/* Email */}
+      <View style={styles.inputWrapper}>
+        <Feather name="mail" size={18} color="#777" style={styles.inputIcon} />
+        <TextInput placeholder="Email" style={styles.inputWithIcon} placeholderTextColor="#777" keyboardType="email-address" />
+      </View>
+
+      {/* Password */}
+      <View style={styles.inputWrapper}>
+        <Feather name="lock" size={18} color="#777" style={styles.inputIcon} />
+        <TextInput
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+          style={styles.inputWithIcon}
+          placeholderTextColor="#777"
+        />
+        <TouchableOpacity
+          onPress={() => setShowPassword((prev) => !prev)}
+          style={styles.passwordToggle}
+        >
+          <Feather name={showPassword ? "eye" : "eye-off"} size={18} color="#777" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Confirm Password */}
+      <View style={styles.inputWrapper}>
+        <Feather name="lock" size={18} color="#777" style={styles.inputIcon} />
+        <TextInput
+          placeholder="Confirm Password"
+          secureTextEntry={!showConfirmPassword}
+          style={styles.inputWithIcon}
+          placeholderTextColor="#777"
+        />
+        <TouchableOpacity
+          onPress={() => setShowConfirmPassword((prev) => !prev)}
+          style={styles.passwordToggle}
+        >
+          <Feather name={showConfirmPassword ? "eye" : "eye-off"} size={18} color="#777" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Phone Input (FLAG + CODE + NUMBER) */}
+      <PhoneField
+        country={country}
+        onCountryChange={handleCountryPress}
+        value={phone}
+        onChangeText={setPhone}
+      />
+
+      {/* Location */}
+      <View style={styles.locationBlock}>
+        <View style={styles.locationHeader}>
+          <Text style={styles.locationLabel}>Location</Text>
+          <TouchableOpacity onPress={handleDetectLocation}>
+            <Text style={styles.detectText}>Detect</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={styles.locationBox}
+          onPress={() => Alert.alert("Location", "Tap Detect to fill location")}
+        >
+          <Text style={location ? styles.locationText : styles.locationPlaceholder}>
+            {location || "Add Location"}
           </Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            Please fill in the details to get started
-          </Text>
-        </View>
+          <Feather name="map-pin" size={18} color="#f5a623" style={styles.locationIcon} />
+        </TouchableOpacity>
+      </View>
 
-        <View style={styles.form}>
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <FormInput
-                icon="user"
-                placeholder="First Name"
-                value={firstName}
-                onChangeText={setFirstName}
-                autoCapitalize="words"
-                error={errors.firstName}
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <FormInput
-                icon="user"
-                placeholder="Last Name"
-                value={lastName}
-                onChangeText={setLastName}
-                autoCapitalize="words"
-                error={errors.lastName}
-              />
-            </View>
-          </View>
+      <View style={styles.noteRow}>
+        <Feather name="map-pin" size={14} color="#f5a623" style={styles.noteIcon} />
+        <Text style={styles.note}>
+          We will use your location to find nearby jobs faster
+        </Text>
+      </View>
 
-          <FormInput
-            icon="mail"
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            error={errors.email}
-          />
+      {/* Button */}
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Create Account</Text>
+      </TouchableOpacity>
 
-          <FormInput
-            icon="lock"
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            togglePassword
-            error={errors.password}
-          />
+      {/* Divider */}
+      <Text style={styles.or}>OR</Text>
 
-          <FormInput
-            icon="lock"
-            placeholder="Confirm Password"
-            value={confirm}
-            onChangeText={setConfirm}
-            secureTextEntry
-            togglePassword
-            error={errors.confirm}
-          />
+      {/* Google Button */}
+      <TouchableOpacity style={styles.googleBtn}>
+        <Image
+          source={require("../../../assets/images/google_icon.png")}
+          style={styles.googleIcon}
+          resizeMode="contain"
+        />
+        <Text style={styles.googleBtnText}>Sign up with Google</Text>
+      </TouchableOpacity>
 
-          <PhoneField
-            country={country}
-            onCountryChange={setCountry}
-            value={phone}
-            onChangeText={setPhone}
-            error={errors.phone}
-          />
-
-          <FormInput
-            icon="map-pin"
-            placeholder={locating ? "Detecting location..." : "Add Location"}
-            value={location}
-            onChangeText={setLocation}
-            rightIcon={locating ? "loader" : "crosshair"}
-            onRightIconPress={handleLocate}
-            error={errors.location}
-          />
-
-          <View style={styles.locationHint}>
-            <Feather name="info" size={13} color={colors.primary} />
-            <Text style={[styles.hintText, { color: colors.mutedForeground }]}>
-              We will use your location to find nearby jobs faster.
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.actions}>
-          <PrimaryButton
-            label="Create Account"
-            onPress={handleSubmit}
-            loading={submitting}
-          />
-
-          <View style={styles.dividerRow}>
-            <View style={[styles.line, { backgroundColor: colors.border }]} />
-            <Text
-              style={[styles.dividerText, { color: colors.mutedForeground }]}
-            >
-              OR
-            </Text>
-            <View style={[styles.line, { backgroundColor: colors.border }]} />
-          </View>
-
-          <PrimaryButton
-            label="Sign up with Google"
-            variant="outline"
-            loading={googleLoading}
-            onPress={handleGoogle}
-            leftIcon={<GoogleIcon size={20} />}
-          />
-
-          <View style={styles.footer}>
-            <Text
-              style={{
-                color: colors.mutedForeground,
-                fontFamily: "Inter_400Regular",
-              }}
-            >
-              Already have an account?{" "}
-            </Text>
-            <Pressable
-              onPress={() =>
-                showSuccess(
-                  "Sign In",
-                  "Sign In is not part of this design preview.",
-                )
-              }
-            >
-              <Text
-                style={{
-                  color: colors.primary,
-                  fontFamily: "Inter_600SemiBold",
-                }}
-              >
-                Sign In
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </KeyboardAwareScrollViewCompat>
-    </View>
+      {/* Footer */}
+      <Text style={styles.footer}>
+        Already have an account?{" "}
+        <Text style={{ color: "#f5a623", fontWeight: "bold" }}>
+          Sign In
+        </Text>
+      </Text>
+    </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  headerBar: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
+  container: {
+    padding: 20,
+    backgroundColor: "#FFF6E2",
+    flexGrow: 1,
+    justifyContent: "center",
   },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1,
+
+  iconContainer: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  profileIcon: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: "#f5a623",
     alignItems: "center",
     justifyContent: "center",
   },
-  scroll: {
-    paddingHorizontal: 24,
-    paddingTop: 110,
-    gap: 28,
+  profileIconHead: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    marginBottom: 6,
   },
-  heroSection: {
+  profileIconBody: {
+    width: 34,
+    height: 24,
+    borderRadius: 16,
+    backgroundColor: "#fff",
+  },
+
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "#fff",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "center",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
+
   title: {
-    fontSize: 26,
-    marginTop: 6,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: -0.4,
+    textAlign: "center",
+    fontSize: 22,
+    fontWeight: "bold",
   },
+
   subtitle: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+    color: "#777",
+    marginBottom: 20,
   },
-  form: {
-    gap: 14,
-  },
+
   row: {
     flexDirection: "row",
+    justifyContent: "space-between",
     gap: 12,
   },
-  locationHint: {
+
+  inputHalf: {
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 14,
+    width: "48%",
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    minHeight: 54,
+  },
+
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    paddingHorizontal: 14,
+    marginBottom: 12,
+    minHeight: 54,
+  },
+  inputWrapperHalf: {
+    width: "48%",
+  },
+  inputWithIcon: {
+    flex: 1,
+    fontSize: 16,
+    color: "#111",
+    minHeight: 54,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  passwordToggle: {
+    padding: 8,
+  },
+
+  input: {
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    minHeight: 54,
+  },
+
+  phoneContainer: {
+    width: "100%",
+    borderRadius: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    minHeight: 54,
+  },
+
+  phoneTextContainer: {
+    borderRadius: 14,
+    backgroundColor: "#fff",
+  },
+
+  locationBlock: {
+    marginBottom: 8,
+    gap: 10,
+  },
+  locationHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  locationLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#444",
+  },
+  detectText: {
+    color: "#f5a623",
+    fontWeight: "600",
+  },
+  locationBox: {
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  locationPlaceholder: {
+    color: "#999",
+    fontSize: 15,
+  },
+  locationText: {
+    color: "#111",
+    fontSize: 15,
+    flex: 1,
+  },
+  locationIcon: {
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  noteRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginTop: -6,
-    marginLeft: 4,
+    marginBottom: 15,
   },
-  hintText: {
+  noteIcon: {
+    marginTop: 2,
+  },
+  note: {
     fontSize: 12,
-    fontFamily: "Inter_500Medium",
+    color: "#999",
     flex: 1,
   },
-  actions: {
-    gap: 16,
-  },
-  dividerRow: {
-    flexDirection: "row",
+
+  button: {
+    backgroundColor: "#f5a623",
+    padding: 15,
+    borderRadius: 10,
     alignItems: "center",
-    gap: 10,
   },
-  line: {
-    flex: 1,
-    height: 1,
+
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
-  dividerText: {
-    fontSize: 12,
-    fontFamily: "Inter_500Medium",
-    letterSpacing: 1,
+
+  or: {
+    textAlign: "center",
+    marginVertical: 10,
+    color: "#999",
   },
-  footer: {
+
+  googleBtn: {
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
-    marginTop: 4,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+  },
+  googleBtnText: {
+    color: "#111",
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+
+  footer: {
+    textAlign: "center",
+    marginTop: 15,
+    color: "#555",
   },
 });

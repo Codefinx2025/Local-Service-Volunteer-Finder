@@ -17,6 +17,13 @@ type PhoneFieldProps = TextInputProps & {
   error?: string;
 };
 
+const getCountryFlag = (code: string) =>
+  code
+    .toUpperCase()
+    .replace(/./g, (char) =>
+      String.fromCodePoint(char.charCodeAt(0) + 127397),
+    );
+
 export function PhoneField({
   country,
   onCountryChange,
@@ -37,12 +44,13 @@ export function PhoneField({
           },
         ]}
       >
+        <Feather name="phone" size={18} color={colors.mutedForeground} style={styles.phoneInputIcon} />
         <Pressable
           onPress={() => onCountryChange(country)}
           style={[styles.countryButton, { borderColor: colors.border }]}
         >
           <Text style={[styles.countryText, { color: colors.foreground }]}> 
-            {country.dialCode}
+            {getCountryFlag(country.code)} {country.dialCode}
           </Text>
           <Feather name="chevron-down" size={14} color={colors.mutedForeground} />
         </Pressable>
@@ -67,9 +75,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 16,
-    paddingVertical: 12,
+    borderRadius: 14,
     paddingHorizontal: 14,
+    height: 54,
     gap: 10,
   },
   countryButton: {
@@ -79,6 +87,10 @@ const styles = StyleSheet.create({
     paddingRight: 8,
     marginRight: 4,
     borderRightWidth: 1,
+    height: 54,
+  },
+  phoneInputIcon: {
+    marginRight: 8,
   },
   countryText: {
     fontSize: 16,
@@ -87,7 +99,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    minHeight: 40,
+    height: 54,
   },
   errorText: {
     marginTop: 6,
