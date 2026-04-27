@@ -1,6 +1,6 @@
 import { Redirect } from "expo-router";
-import WorkerProfileScreen from "../screens/worker/profile/WorkerProfileScreen";
+import WorkerHomeScreen from "../screens/worker/home/WorkerHomeScreen";
 
 export default function Index() {
-  return <WorkerProfileScreen />;
+  return <WorkerHomeScreen/>;
 }
