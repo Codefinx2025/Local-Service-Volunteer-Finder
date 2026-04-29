@@ -1,7 +1,7 @@
-import Onboarding from '../screens/auth/Onboarding';
+import DiscoverPage from "../screens/client/home/discoverpage";
 
-export default function HomeScreen() {
-  return <Onboarding />;
+export default function Index() {
 
+  return <DiscoverPage/>;
+  
 }
-

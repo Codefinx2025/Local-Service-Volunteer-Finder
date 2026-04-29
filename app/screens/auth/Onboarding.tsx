@@ -8,6 +8,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+
+const router = useRouter();
 
 export default function Onboarding({ navigation }: any) {
   return (
@@ -61,10 +64,10 @@ export default function Onboarding({ navigation }: any) {
         </TouchableOpacity>
 
           {/* Hire Someone Card */}
-          <TouchableOpacity
+        <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate("HireLogin")}
-          >
+            onPress={() => router.push("/(tabs)")}
+        >
 
           <View style={[styles.iconBox, { backgroundColor: "#E6F0FF" }]}>
             <Image
@@ -93,7 +96,7 @@ export default function Onboarding({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F6F2",
+    backgroundColor: "#FFFCF3",
     paddingHorizontal: 20,
   },
 
