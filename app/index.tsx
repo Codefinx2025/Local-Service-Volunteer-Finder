@@ -1,2 +1,2 @@
-export { default } from './screens/worker/profile/WorkerProfileScreen';
+export { default } from './screens/client/Paymentpages/Payment';
 
