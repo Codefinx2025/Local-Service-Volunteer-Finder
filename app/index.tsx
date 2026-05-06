@@ -1,2 +1,2 @@
-export { default } from './screens/client/Paymentpages/PaymentSuccess';
+export { default } from './screens/client/Paymentpages/PayWithPaypal';
 
