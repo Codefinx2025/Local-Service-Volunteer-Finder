@@ -1,2 +1,2 @@
-export { default } from './screens/client/Paymentpages/Payment';
+export { default } from './screens/client/Paymentpages/AddCard';
 
