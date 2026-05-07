@@ -1,2 +1,2 @@
-export { default } from './screens/client/Paymentpages/BinancePay';
+export { default } from './screens/client/Paymentpages/BinancePayWithApp';
 
