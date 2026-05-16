@@ -1,2 +1,2 @@
-export { default } from './screens/client/orders/ClientOrderDetails';
+export { default } from './screens/client/orders/WorkerAccepted';
 
