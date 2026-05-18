@@ -1,2 +1,2 @@
-export { default } from './screens/client/orders/JobCompleted';
+export { default } from './screens/client/orders/RateReviews';
 
